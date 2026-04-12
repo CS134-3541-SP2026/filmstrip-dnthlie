@@ -29,7 +29,19 @@ fun ScrapbookScreen(viewModel: ScrapbookViewModel,
                     modifier: Modifier = Modifier) {
     var selectedSlot by rememberSaveable { mutableStateOf<Int?>(null) }
 
-    // todo: create a launcher
+    // TODO: ADD UNLIMITED PHOTOS
+
+
+    // FIN: create a launcher
+    // NOTE: ActivityResultContracts - is an Android API from jetpack.
+    // Allows setup of camera app to launch. Helps assign variable name to use as a tool/function
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        bitmap?.let {
+            viewModel.setPhoto(selectedSlot!!, it)
+        }
+    }
 
     Column (
         modifier = modifier
@@ -40,7 +52,9 @@ fun ScrapbookScreen(viewModel: ScrapbookViewModel,
             photo = viewModel.photo1,
             onClick = {
                 selectedSlot = 1
-                // todo: activate the launcher
+                // FIN: activate the launcher
+                // NOTE: Uses the camera app launcher
+                cameraLauncher.launch(null)
             }
         )
     }
