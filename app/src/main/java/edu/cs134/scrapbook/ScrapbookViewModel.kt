@@ -33,7 +33,6 @@ class ScrapbookViewModel : ViewModel() {
         photos = newList
     }
 
-    //LOAD PHOTOS
     fun refreshPhoto(slot: Int, context: Context) {
         //NOTE: "externalCacheDir" or whatever term must match what's in ScrapbookScreen!!!!!!
         val file = File(context.externalCacheDir, "slot_$slot.jpg")
