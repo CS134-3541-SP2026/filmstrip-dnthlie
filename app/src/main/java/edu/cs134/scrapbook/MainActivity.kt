@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import edu.cs134.scrapbook.ui.theme.ScrapbookTheme
@@ -20,6 +21,12 @@ class MainActivity : ComponentActivity() {
             ScrapbookTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val scrapbookVM: ScrapbookViewModel = viewModel()
+                    //LOAD PHOTOS (5)
+                    LaunchedEffect(Unit) {
+                        for (slot in 0..5) {
+                            scrapbookVM.refreshPhoto(slot, this@MainActivity)
+                        }
+                    }
                     ScrapbookScreen(
                         scrapbookVM,
                         modifier = Modifier.padding(innerPadding),

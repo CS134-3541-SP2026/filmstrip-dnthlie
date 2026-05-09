@@ -23,23 +23,39 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import java.io.File
 import androidx.core.graphics.scale
+import java.io.FileOutputStream
 
 @Composable
 fun ScrapbookScreen(viewModel: ScrapbookViewModel,
                     modifier: Modifier = Modifier) {
     var selectedSlot by rememberSaveable { mutableStateOf<Int?>(null) }
+    val context = LocalContext.current  // add context
 
-    // TODO: ADD UNLIMITED PHOTOS
-
-
-    // FIN: create a launcher
+    // FIN: Craete a launcher
     // NOTE: ActivityResultContracts - is an Android API from jetpack.
     // Allows setup of camera app to launch. Helps assign variable name to use as a tool/function
     val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicturePreview()
-    ) { bitmap ->
-        bitmap?.let {
-            viewModel.setPhoto(selectedSlot!!, it)
+        ActivityResultContracts
+            .TakePicturePreview()
+    ) { image ->
+        image?.let {
+            // if selectedSlot is not null, can set/update image
+            if (selectedSlot != null) {
+                viewModel.setPhoto(selectedSlot!!, it)
+                //MANUALLY SAVE FILES TO SLOT
+                val file = File(context.externalCacheDir, "slot_${selectedSlot}.jpg")
+                FileOutputStream(file).use {out ->
+                    it.compress(Bitmap.CompressFormat.JPEG, 80, out)
+                }
+            } else {
+                // else add new photo
+                viewModel.addPhoto(it)
+                val slot = viewModel.photos.size - 1
+                val file = File(context.externalCacheDir, "slot_$slot.jpg")
+                FileOutputStream(file).use { out ->
+                    it.compress(Bitmap.CompressFormat.JPEG, 80, out)
+                }
+            }
         }
     }
 
@@ -48,14 +64,76 @@ fun ScrapbookScreen(viewModel: ScrapbookViewModel,
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ){
+        viewModel.photos.forEachIndexed { index, photo ->
+            ScrapbookSlot (
+                photo = photo,
+                onClick = {
+                    selectedSlot = index
+                    cameraLauncher.launch(null)
+                }
+            )
+        }
         ScrapbookSlot(
-            photo = viewModel.photo1,
+            photo = null,
             onClick = {
-                selectedSlot = 1
-                // FIN: activate the launcher
-                // NOTE: Uses the camera app launcher
+                selectedSlot = null
                 cameraLauncher.launch(null)
             }
         )
     }
 }
+
+//OLD:
+//@Composable
+//fun ScrapbookScreen(viewModel: ScrapbookViewModel,
+//                    modifier: Modifier = Modifier) {
+//    var selectedSlot by rememberSaveable { mutableStateOf<Int?>(null) }
+//    val context = LocalContext.current  // add context
+//    var photoURI by remember {mutableStateOf<Uri?>(null)}
+//
+//
+//    // FIN: Craete a launcher
+//    // NOTE: ActivityResultContracts - is an Android API from jetpack.
+//    // Allows setup of camera app to launch. Helps assign variable name to use as a tool/function
+//    val cameraLauncher = rememberLauncherForActivityResult(
+//        ActivityResultContracts
+//            .TakePicturePreview()
+//    ) { image ->
+//        image?.let {
+//            // if selectedSlot is not null, can set/update image
+//            if (selectedSlot != null) {
+//                viewModel.setPhoto(selectedSlot!!, it)
+//            } else {
+//                // else add new photo
+//                viewModel.addPhoto(it)
+//            }
+//        }
+//    }
+//
+//    //Save photos
+//    val photoURI = remember {mutableStateOf<Uri?>(null)}
+//
+//    Column (
+//        modifier = modifier
+//            .fillMaxSize()
+//            .verticalScroll(rememberScrollState())
+//    ){
+//        // EXISTING PHOTOS FOR VIEW
+//        viewModel.photos.forEachIndexed { index, photo ->
+//            ScrapbookSlot (
+//                photo = photo,
+//                onClick = {
+//                    selectedSlot = index
+//                    cameraLauncher.launch(null)
+//                }
+//            )
+//        }
+//        ScrapbookSlot(
+//            photo = null,
+//            onClick = {
+//                selectedSlot = null
+//                cameraLauncher.launch(null)
+//            }
+//        )
+//    }
+//}
